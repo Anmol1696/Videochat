@@ -1,24 +1,25 @@
-from socket import *
+import pickle
+from socket import socket
 import cv2
-from pickle import loads
-from zlib import decompress
+import numpy
+from bz2 import decompress
+import time
 
 def chunk_image(chunks):
 	out = ''
 	for chunk in chunks:
 		out +=  chunk
 	out = decompress(out)
-	out = out.encode('string-escape')
-	out = loads(out)
-	return chunk_image
+	sr = pickle.loads(out)
+	return sr
 
 def Rev():
-	addr = ('127.0.0.7',5000)
-	s = socket(AF_INET, SOCK_DGRAM)
-	s.bind(addr)
+	addr = ('127.0.0.9',5000)
+	s = socket()
+	s.connect(addr)
 	out = []
 	
-	pre, ADDR = s.recvfrom(12)
+	pre = s.recv(12)
 	print pre
 	(num_chunks, len_last) = (int(pre.split(',')[0]), int(pre.split(',')[1]))
 	
@@ -26,17 +27,18 @@ def Rev():
 	
 	for rond in range(num_chunks):
 		if rond != num_chunks - 1:
-			chunk, ADDR = s.recvfrom(2**15)
+			chunk= s.recv(2**15)
 			out.append(chunk)
 		else:
-			chunk, ADDR = s.recvfrom(len_last)
+			chunk= s.recv(len_last)
 			out.append(chunk)
 		print 'step'
 	return out
 
 def show(frame):
-	cv2.nameWindow('Chat')
+	cv2.namedWindow('Chat')
 	cv2.imshow('Chat', frame)
+	print frame
 
 if __name__ == '__main__':
 	show(chunk_image(Rev()))
