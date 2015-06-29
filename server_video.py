@@ -1,16 +1,16 @@
 from socket import socket
 import cv2
-from pickle import dumps
-from bz2 import compress
+from dill import dumps
+from lz4 import compress
 
 
 def chunks(inp):
 	sr = dumps(inp)
 	inp = compress(sr)
-	bs = 2**15
+	bs = 2**14
 	out = []
 	for x in range((len(inp) / bs) + 1):
-		out.append((inp[(bs*x):(bs)*(x+1)]).ljust(2**15))
+		out.append(inp[(bs*x):(bs)*(x+1)])
 	return out
 
 def Ser():
@@ -26,6 +26,9 @@ def Ser():
 	while True:
 		_, frame = vc.read()
 		ch = chunks(frame)
+		pre = str(len(ch)) + ',' + str(len(ch[-1])) + ','
+		pre = pre.ljust(12)
+		c.send(pre)
 		for x in ch:
 			c.send(x)
 		print 'fine'
